@@ -58,10 +58,17 @@ func configure(){
 	// Demux seems to be an event handler where 'Tweet' and 'DM' are events
 	demux := twitter.NewSwitchDemux()
 
+	// Direct message (DM) params
+	// This is used to send messages to the master account
+	dmParams := &twitter.DirectMessageNewParams{
+		ScreenName: "eran_marno",
+		Text: "Sample message from Eran Marno",
+	}
+
 	// This is where the tweet gets printed
 	demux.Tweet = func(tweet *twitter.Tweet){
 		fmt.Println(tweet.Text)
-		//client.DirectMessages.New(false, "eran_marno", tweet.Text)
+		client.DirectMessages.New(dmParams)
 	}
 
 	// This one handles direct messages that are received
@@ -71,9 +78,6 @@ func configure(){
 	}
 
 	fmt.Println("Starting stream...")
-
-	// DM params
-		//dmParams := &twitter.DirectMessageNewParams
 
 	// Filter
 		// StreamFilterParams is a struct type, note that filterParams is really a pointer
