@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,12 +13,22 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+// Returns a list of lines in a file
+// For now, only used to get the Twitter keys for the account
+func processKeyFile(keyFile string) [4]string {
+	// Open file
+	file, err := os.Open(keyFile)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func configure(){
 	// Pass in your consumer key (API key) and your consumer secret (API secret)
-	config := oauth1.NewConfig("ZVMpG2Zz9i8q1Ze6EFMdcgzZV", "1GQCN4vrsNFSX73511BEfIPNynrTpkLoJySxtQEd94k2zSxGgz")
+	config := oauth1.NewConfig("placeholder", "placeholder")
 
 	// Pass in your access token and your access token secret
-	token := oauth1.NewToken("937561951-uA4P6l59ycWXRajP58EbXZdAyKEgQbYnoZK0fqJk", "cHJ9dDS53BwpAdorS5rBb0IDxIgfjAwtorXRY3H593yWN")
+	token := oauth1.NewToken("placeholder", "placeholder")
 
 	// NoContext is the default for most cases
 	httpClient := config.Client(oauth1.NoContext, token)
@@ -29,7 +40,7 @@ func configure(){
 	// This is where the tweet gets printed
 	demux.Tweet = func(tweet *twitter.Tweet){
 		fmt.Println(tweet.Text)
-		client.DirectMessages.New(false, "eran_marno", tweet.Text)
+		//client.DirectMessages.New(false, "eran_marno", tweet.Text)
 	}
 
 	// This one handles direct messages that are received
@@ -41,14 +52,14 @@ func configure(){
 	fmt.Println("Starting stream...")
 
 	// DM params
-		dmParams := &twitter.DirectMessageNewParams
+		//dmParams := &twitter.DirectMessageNewParams
 
 	// Filter
 		// StreamFilterParams is a struct type, note that filterParams is really a pointer
 		filterParams := &twitter.StreamFilterParams{
 			// Note that []string is simply the type for a string slice literal (dynamically sized portion
 			// of an array)
-			Track:		[]string{"machinelearning"},
+			Track:		[]string{"cat"},
 			StallWarnings:	twitter.Bool(true),
 		}
 
