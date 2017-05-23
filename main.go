@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"io"
+	"bufio"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,20 +15,41 @@ import (
 
 // Returns a list of lines in a file
 // For now, only used to get the Twitter keys for the account
-func processKeyFile(keyFile string) [4]string {
+func processKeyFile(keyFile string) []string {
 	// Open file
 	file, err := os.Open(keyFile)
 	if err != nil {
 		panic(err)
 	}
+	// Defer occurs only after the function ends
+	// which makes sense, considering it closes the file
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+
+	// Gets each line from the file, using the scanner, and appends it to the array
+	for scanner.Scan(){
+		lines = append(lines, scanner.Text())
+	}
+	return lines
 }
 
+// Launches the bot
 func configure(){
+	var twitterKeys []string
+	twitterKeys = processKeyFile("keys.txt")
+
+	fmt.Println(twitterKeys[0])
+	fmt.Println(twitterKeys[1])
+	fmt.Println(twitterKeys[2])
+	fmt.Println(twitterKeys[3])
+
 	// Pass in your consumer key (API key) and your consumer secret (API secret)
-	config := oauth1.NewConfig("placeholder", "placeholder")
+	config := oauth1.NewConfig(twitterKeys[0], twitterKeys[1])
 
 	// Pass in your access token and your access token secret
-	token := oauth1.NewToken("placeholder", "placeholder")
+	token := oauth1.NewToken(twitterKeys[2], twitterKeys[3])
 
 	// NoContext is the default for most cases
 	httpClient := config.Client(oauth1.NoContext, token)
