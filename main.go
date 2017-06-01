@@ -58,59 +58,57 @@ func configure(){
 	// Demux seems to be an event handler where 'Tweet' and 'DM' are events
 	demux := twitter.NewSwitchDemux()
 
-	// Direct message (DM) params
-	// This is used to send messages to the master account
-	dmParams := &twitter.DirectMessageNewParams{
-		ScreenName: "eran_marno",
-		Text: "Sample message from Eran Marno",
-	}
-
 	// This is where the tweet gets printed
-	demux.Tweet = func(tweet *twitter.Tweet){
+	/*demux.Tweet = func(tweet *twitter.Tweet){
+		// Direct message (DM) params
+		// This is used to send messages to the master account
+		dmParams := &twitter.DirectMessageNewParams{
+			ScreenName: "eran_marno",
+			Text: tweet.Text,
+		}
 		fmt.Println(tweet.Text)
 		client.DirectMessages.New(dmParams)
-	}
+	}*/
 
 	// This one handles direct messages that are received
+	// Part of SwitchDemux
 	demux.DM = func(dm *twitter.DirectMessage){
-		fmt.Println("FINALLY: " + dm.Text)
+		//fmt.Println("FINALLY: " + dm.Text)
+		fmt.Println(dm.SenderID)
 
+	}
+
+	demux.All = func(message interface{}){
+		fmt.Println(message)
 	}
 
 	fmt.Println("Starting stream...")
 
 	// Filter
-		// StreamFilterParams is a struct type, note that filterParams is really a pointer
-		filterParams := &twitter.StreamFilterParams{
-			// Note that []string is simply the type for a string slice literal (dynamically sized portion
-			// of an array)
-			Track:		[]string{"cat"},
-			StallWarnings:	twitter.Bool(true),
-		}
+	// StreamFilterParams is a struct type, note that filterParams is really a pointer
+	filterParams := &twitter.StreamFilterParams{
+		// Note that []string is simply the type for a string slice literal (dynamically sized portion
+		// of an array)
+		Track:		[]string{"cats"},
+		StallWarnings:	twitter.Bool(true),
+	}
 
-		stream, err := client.Streams.Filter(filterParams)
-		if err != nil {
-			log.Fatal(err)
-		}
+	stream, err := client.Streams.Filter(filterParams)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Receive messages until stopped or stream quits
-		go demux.HandleChan(stream.Messages)
+	go demux.HandleChan(stream.Messages)
 
-		// Wait for SIGINT and SIGTERM (Hit CTRL-C)
-		ch := make(chan os.Signal)
-		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-		log.Println(<-ch)
+	// Wait for SIGINT and SIGTERM (Hit CTRL-C)
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	log.Println(<-ch)
 
-	// Send a Tweet
-	// tweet, resp, err := client.Statuses.Update("just setting up my twttr", nil)
+	fmt.Println("Stopping Stream...")
+	stream.Stop()
 
-	// Send a DM
-	// directMessage, resp, err := client.DirectMessages.New(directMessageParams)
-	/**type DirectMessageNewParams struct {
-		UserID     int64  `url:"user_id,omitempty"`
-		ScreenName string `url:"screen_name,omitempty"`
-		Text       string `url:"text"`
-	}**/
 }
 
 func main() {
