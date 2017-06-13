@@ -59,7 +59,8 @@ func configure(){
 	demux := twitter.NewSwitchDemux()
 
 	// This is where the tweet gets printed
-	/*demux.Tweet = func(tweet *twitter.Tweet){
+	/*
+	demux.Tweet = func(tweet *twitter.Tweet){
 		// Direct message (DM) params
 		// This is used to send messages to the master account
 		dmParams := &twitter.DirectMessageNewParams{
@@ -68,32 +69,54 @@ func configure(){
 		}
 		fmt.Println(tweet.Text)
 		client.DirectMessages.New(dmParams)
-	}*/
+	}
+	*/
 
 	// This one handles direct messages that are received
 	// Part of SwitchDemux
 	demux.DM = func(dm *twitter.DirectMessage){
-		//fmt.Println("FINALLY: " + dm.Text)
+		fmt.Println("FINALLY: " + dm.Text)
 		fmt.Println(dm.SenderID)
 
 	}
 
+	/*
 	demux.All = func(message interface{}){
 		fmt.Println(message)
 	}
+	*/
+
 
 	fmt.Println("Starting stream...")
 
 	// Filter
 	// StreamFilterParams is a struct type, note that filterParams is really a pointer
+
+	/*
 	filterParams := &twitter.StreamFilterParams{
 		// Note that []string is simply the type for a string slice literal (dynamically sized portion
 		// of an array)
-		Track:		[]string{"cats"},
+		Track:		[]string{"LUISCONEJO"},
 		StallWarnings:	twitter.Bool(true),
 	}
+	*/
 
-	stream, err := client.Streams.Filter(filterParams)
+	// Sample stream (instead of filtered)
+	/*
+	params := &twitter.StreamSampleParams{
+		StallWarnings: twitter.Bool(true),
+	}
+	*/
+
+	// User stream
+	userParams := &twitter.StreamUserParams{
+		With: "followings",
+		StallWarnings: twitter.Bool(true),
+	}
+
+	//stream, err := client.Streams.Filter(filterParams)
+	//stream, err := client.Streams.Sample(params)
+	stream, err := client.Streams.User(userParams)
 	if err != nil {
 		log.Fatal(err)
 	}
