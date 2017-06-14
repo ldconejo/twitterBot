@@ -7,11 +7,18 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	// flag is imported to support command-line flags
+	//"flag"
 
 	// These two libraries had to be installed from the github repositories
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"flag"
 )
+
+////////////////////////////////////
+// Implementation functions
+///////////////////////////////////
 
 // Returns a list of lines in a file
 // For now, only used to get the Twitter keys for the account
@@ -35,15 +42,33 @@ func processKeyFile(keyFile string) []string {
 	return lines
 }
 
+// Parses arguments and returns a map
+func get_commandline_args() map[string]string {
+	// Declare command line parameters and their default values
+
+	// The master account has control over what the bot does
+	masterNamePtr := flag.String("master", "luisdconejo", "the name of the master account")
+	// myname is the screen name of the servant account
+	mynamePtr := flag.String("servant", "eran_marno", "screen name of the servant account")
+
+	flag.Parse()
+
+	// Create an empty map (similar to a Python dictionary)
+	cmdLineArgs := map[string]string{}
+	cmdLineArgs["masterName"] = *masterNamePtr
+	cmdLineArgs["servantName"] = *mynamePtr
+	return cmdLineArgs
+}
+
 // Launches the bot
 func configure(){
+	// Get commandline arguments
+	cmdLineArgs := get_commandline_args()
+	master := cmdLineArgs["masterName"]
+	servant := cmdLineArgs["servantName"]
+
 	var twitterKeys []string
 	twitterKeys = processKeyFile("keys.txt")
-
-	fmt.Println(twitterKeys[0])
-	fmt.Println(twitterKeys[1])
-	fmt.Println(twitterKeys[2])
-	fmt.Println(twitterKeys[3])
 
 	// Pass in your consumer key (API key) and your consumer secret (API secret)
 	config := oauth1.NewConfig(twitterKeys[0], twitterKeys[1])
@@ -75,38 +100,27 @@ func configure(){
 	// This one handles direct messages that are received
 	// Part of SwitchDemux
 	demux.DM = func(dm *twitter.DirectMessage){
-		fmt.Println("FINALLY: " + dm.Text)
-		fmt.Println(dm.SenderID)
+		// Check if the message comes from the master account
+		if dm.SenderScreenName != master && dm.SenderScreenName != servant{
+			fmt.Println("Whoever you are, you're not my master")
+			fmt.Println(dm.SenderScreenName)
+			fmt.Println(master)
+		} else if dm.SenderScreenName == master{
+			fmt.Println("Hello, my master")
 
+			// Set parameters for a response via direct message
+			dmParams := &twitter.DirectMessageNewParams{
+				ScreenName: master,
+				Text: "Hey, boss. What's up?",
+			}
+			directMessage, httpResponse, err := client.DirectMessages.New(dmParams)
+			if err != nil {
+				fmt.Println(directMessage, httpResponse, err)
+			}
+		}
 	}
-
-	/*
-	demux.All = func(message interface{}){
-		fmt.Println(message)
-	}
-	*/
-
 
 	fmt.Println("Starting stream...")
-
-	// Filter
-	// StreamFilterParams is a struct type, note that filterParams is really a pointer
-
-	/*
-	filterParams := &twitter.StreamFilterParams{
-		// Note that []string is simply the type for a string slice literal (dynamically sized portion
-		// of an array)
-		Track:		[]string{"LUISCONEJO"},
-		StallWarnings:	twitter.Bool(true),
-	}
-	*/
-
-	// Sample stream (instead of filtered)
-	/*
-	params := &twitter.StreamSampleParams{
-		StallWarnings: twitter.Bool(true),
-	}
-	*/
 
 	// User stream
 	userParams := &twitter.StreamUserParams{
@@ -114,8 +128,6 @@ func configure(){
 		StallWarnings: twitter.Bool(true),
 	}
 
-	//stream, err := client.Streams.Filter(filterParams)
-	//stream, err := client.Streams.Sample(params)
 	stream, err := client.Streams.User(userParams)
 	if err != nil {
 		log.Fatal(err)
@@ -134,10 +146,36 @@ func configure(){
 
 }
 
+// Main flow, this is where the program launches
 func main() {
-	fmt.Println("Go-Twitter Bot v0.01")
+	fmt.Println("Go-Twitter Master-Servant Bot v0.01")
 
 	// Launch the bot
 	configure()
 }
 
+/* Unused code, kept here as backup
+	/*
+	demux.All = func(message interface{}){
+		fmt.Println(message)
+	}
+	*/
+
+// Filter
+// StreamFilterParams is a struct type, note that filterParams is really a pointer
+
+/*
+filterParams := &twitter.StreamFilterParams{
+	// Note that []string is simply the type for a string slice literal (dynamically sized portion
+	// of an array)
+	Track:		[]string{"LUISCONEJO"},
+	StallWarnings:	twitter.Bool(true),
+}
+*/
+
+// Sample stream (instead of filtered)
+/*
+params := &twitter.StreamSampleParams{
+	StallWarnings: twitter.Bool(true),
+}
+*/
