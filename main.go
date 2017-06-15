@@ -8,12 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 	// flag is imported to support command-line flags
-	//"flag"
+	"flag"
+	"regexp"
 
 	// These two libraries had to be installed from the github repositories
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
-	"flag"
 )
 
 ////////////////////////////////////
@@ -60,6 +60,22 @@ func get_commandline_args() map[string]string {
 	return cmdLineArgs
 }
 
+// Decodes direct messages to master account
+// Returns a string and an array containing the type of message
+// and any parameters
+func decodeMasterMessage(masterMessage string) string {
+	var validCommand = regexp.MustCompile(`[A-Z]{3} .*`)
+	var resultArray string
+
+	if validCommand.MatchString(masterMessage){
+		resultArray = "true"
+		return resultArray
+	}
+	resultArray = "false"
+	return resultArray
+
+}
+
 // Launches the bot
 func configure(){
 	// Get commandline arguments
@@ -83,20 +99,6 @@ func configure(){
 	// Demux seems to be an event handler where 'Tweet' and 'DM' are events
 	demux := twitter.NewSwitchDemux()
 
-	// This is where the tweet gets printed
-	/*
-	demux.Tweet = func(tweet *twitter.Tweet){
-		// Direct message (DM) params
-		// This is used to send messages to the master account
-		dmParams := &twitter.DirectMessageNewParams{
-			ScreenName: "eran_marno",
-			Text: tweet.Text,
-		}
-		fmt.Println(tweet.Text)
-		client.DirectMessages.New(dmParams)
-	}
-	*/
-
 	// This one handles direct messages that are received
 	// Part of SwitchDemux
 	demux.DM = func(dm *twitter.DirectMessage){
@@ -106,7 +108,11 @@ func configure(){
 			fmt.Println(dm.SenderScreenName)
 			fmt.Println(master)
 		} else if dm.SenderScreenName == master{
-			fmt.Println("Hello, my master")
+			if decodeMasterMessage(dm.Text) == "true" {
+				fmt.Println("Received message was an order")
+			} else {
+				fmt.Println( "Received message WAS NOT an order")
+			}
 
 			// Set parameters for a response via direct message
 			dmParams := &twitter.DirectMessageNewParams{
@@ -177,5 +183,19 @@ filterParams := &twitter.StreamFilterParams{
 /*
 params := &twitter.StreamSampleParams{
 	StallWarnings: twitter.Bool(true),
+}
+*/
+
+// This is where the tweet gets printed
+/*
+demux.Tweet = func(tweet *twitter.Tweet){
+	// Direct message (DM) params
+	// This is used to send messages to the master account
+	dmParams := &twitter.DirectMessageNewParams{
+		ScreenName: "eran_marno",
+		Text: tweet.Text,
+	}
+	fmt.Println(tweet.Text)
+	client.DirectMessages.New(dmParams)
 }
 */
