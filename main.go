@@ -63,16 +63,24 @@ func get_commandline_args() map[string]string {
 // Decodes direct messages to master account
 // Returns a string and an array containing the type of message
 // and any parameters
-func decodeMasterMessage(masterMessage string) string {
-	var validCommand = regexp.MustCompile(`[A-Z]{3} .*`)
-	var resultArray string
+func decodeMasterMessage(masterMessage string) (string, string, string) {
+	var validCommand = regexp.MustCompile(`([A-Z]{3}) (.*)`)
+	var result string
+	var commandArray []string
 
 	if validCommand.MatchString(masterMessage){
-		resultArray = "true"
-		return resultArray
+		commandArray = validCommand.FindStringSubmatch(masterMessage)
+		command := commandArray[1]
+		commandParameters := commandArray[2]
+
+		fmt.Println("Command:", command)
+		fmt.Println("Parameters:", commandParameters)
+
+		result = "true"
+		return result, command, commandParameters
 	}
-	resultArray = "false"
-	return resultArray
+	result = "false"
+	return result, "empty", "empty"
 
 }
 
@@ -108,8 +116,15 @@ func configure(){
 			fmt.Println(dm.SenderScreenName)
 			fmt.Println(master)
 		} else if dm.SenderScreenName == master{
-			if decodeMasterMessage(dm.Text) == "true" {
+			// Decode instruction from master
+			result, command, commandParameters := decodeMasterMessage(dm.Text)
+
+			if  result == "true" {
 				fmt.Println("Received message was an order")
+				if command == "TWT" {
+					// Tweets the command parameters
+					client.Statuses.Update(commandParameters, nil)
+				}
 			} else {
 				fmt.Println( "Received message WAS NOT an order")
 			}

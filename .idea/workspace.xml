@@ -18,8 +18,8 @@
       <file leaf-file-name="main.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-705">
-              <caret line="49" column="55" lean-forward="false" selection-start-line="49" selection-start-column="55" selection-end-line="49" selection-end-column="55" />
+            <state relative-caret-position="467">
+              <caret line="119" column="77" lean-forward="true" selection-start-line="119" selection-start-column="77" selection-end-line="119" selection-end-column="77" />
               <folding>
                 <element signature="e#14#292#0" expanded="true" />
               </folding>
@@ -236,7 +236,8 @@
     <MESSAGE value="Added handle all messages to see if DM are captured, still not working." />
     <MESSAGE value="This version replaces the StreamFilter, which feeds from a public stream and therefore ignores direct messages, with StreamUser, which does get access to direct messages sent to the user." />
     <MESSAGE value="Daily commit. Added the some commandline parameters to define the screen&#10;name of the master and servant account. Also, enabled the bot to execute&#10;simple replies to the direct messages." />
-    <option name="LAST_COMMIT_MESSAGE" value="Daily commit. Added the some commandline parameters to define the screen&#10;name of the master and servant account. Also, enabled the bot to execute&#10;simple replies to the direct messages." />
+    <MESSAGE value="Daily commit. Added an early implementation of regular expressions to&#10;recognize command sent via DM." />
+    <option name="LAST_COMMIT_MESSAGE" value="Daily commit. Added an early implementation of regular expressions to&#10;recognize command sent via DM." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -295,8 +296,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-705">
-          <caret line="49" column="55" lean-forward="false" selection-start-line="49" selection-start-column="55" selection-end-line="49" selection-end-column="55" />
+        <state relative-caret-position="467">
+          <caret line="119" column="77" lean-forward="true" selection-start-line="119" selection-start-column="77" selection-end-line="119" selection-end-column="77" />
           <folding>
             <element signature="e#14#292#0" expanded="true" />
           </folding>
