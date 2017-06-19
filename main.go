@@ -14,6 +14,7 @@ import (
 	// These two libraries had to be installed from the github repositories
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"reflect"
 )
 
 ////////////////////////////////////
@@ -84,6 +85,21 @@ func decodeMasterMessage(masterMessage string) (string, string, string) {
 
 }
 
+// Sends a direct message to the master account
+func SendDirectMessage(client *twitter.Client, screenName string, messageText string){
+	dmParams := &twitter.DirectMessageNewParams{
+		ScreenName: screenName,
+		Text: messageText,
+	}
+	directMessage, httpResponse, err := client.DirectMessages.New(dmParams)
+	if err != nil {
+		fmt.Println(directMessage, httpResponse, err)
+	}
+}
+
+// Checks if a command is valid
+// Valid commands are: TWT (tweet), FLW (follow)
+
 // Launches the bot
 func configure(){
 	// Get commandline arguments
@@ -120,23 +136,22 @@ func configure(){
 			result, command, commandParameters := decodeMasterMessage(dm.Text)
 
 			if  result == "true" {
-				fmt.Println("Received message was an order")
-				if command == "TWT" {
-					// Tweets the command parameters
+				switch command {
+				// Command is to tweet something
+				case "TWT":
+					// Tweets the command parameters and sends confirmation to master account
 					client.Statuses.Update(commandParameters, nil)
+					SendDirectMessage(client, master, "I have posted your tweet.")
+				// Command is just to confirm that the bot is active
+					// AYT means "Are You There?
+				case "AYT":
+					// Set parameters for a response via direct message
+					SendDirectMessage(client, master, "Hey, boss. I'm active. What's up?")
 				}
+				// RPT stands for report, depending on parameters, provides a report on new followers
 			} else {
 				fmt.Println( "Received message WAS NOT an order")
-			}
-
-			// Set parameters for a response via direct message
-			dmParams := &twitter.DirectMessageNewParams{
-				ScreenName: master,
-				Text: "Hey, boss. What's up?",
-			}
-			directMessage, httpResponse, err := client.DirectMessages.New(dmParams)
-			if err != nil {
-				fmt.Println(directMessage, httpResponse, err)
+				fmt.Println(reflect.TypeOf(client))
 			}
 		}
 	}
