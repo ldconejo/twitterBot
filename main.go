@@ -15,6 +15,7 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"reflect"
+	"strings"
 )
 
 ////////////////////////////////////
@@ -22,7 +23,8 @@ import (
 ///////////////////////////////////
 
 // Returns a list of lines in a file
-// For now, only used to get the Twitter keys for the account
+// It is used to get the Twitter keys for the account
+// and to get list of filter words for tweet selection
 func processKeyFile(keyFile string) []string {
 	// Open file
 	file, err := os.Open(keyFile)
@@ -97,6 +99,43 @@ func SendDirectMessage(client *twitter.Client, screenName string, messageText st
 	}
 }
 
+// Examines a tweet and decides whether to ask the master for permission to tweet it
+// Uses simple matching to select tweets that content words in the list
+func ExamineTweet(tweetText string) bool {
+
+	var filterWords []string
+	filterWords = processKeyFile("filters.txt")
+
+	filterRegex := ""
+
+	// Assemble combined string for regex
+	for _,word := range filterWords{
+		word = strings.ToUpper(word)
+		if filterRegex == "" {
+			filterRegex = "(" + word + ")+"
+		} else {
+			filterRegex = filterRegex + "|(" + word + ")+"
+		}
+	}
+
+	fmt.Println("INFO: Regex: " + filterRegex)
+
+	// Capitalizes the string being tested
+	tweetText = strings.ToUpper(tweetText)
+
+	// Now, compile regex
+	interestingTweet := regexp.MustCompile(filterRegex)
+
+	if interestingTweet.MatchString(tweetText){
+		commandArray := interestingTweet.FindStringSubmatch(tweetText)
+		command := commandArray[0]
+		fmt.Println("INFO: String match: " + command)
+		return true
+	}
+
+	return false
+}
+
 // Checks if a command is valid
 // Valid commands are: TWT (tweet), FLW (follow)
 
@@ -154,6 +193,14 @@ func configure(){
 				fmt.Println(reflect.TypeOf(client))
 			}
 		}
+	}
+
+	// This one handles tweets on the user stream
+	demux.Tweet = func(tweet *twitter.Tweet){
+		if ExamineTweet(tweet.Text){
+			fmt.Println("This tweet is interesting:" + tweet.Text + "\n")
+		}
+		fmt.Println(tweet.Text)
 	}
 
 	fmt.Println("Starting stream...")
