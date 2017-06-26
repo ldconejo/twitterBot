@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="14f88889-9e8c-4747-bc34-6242960040ae" name="Default" comment="Daily commit. Bot now is able to use a list of filter&#10;words / expressions and recognize them in its Twitter feed, reporting&#10;them (for now) to the console. Next step is to send these as DMs to the&#10;main account, asking for permission to retweet.">
+    <list default="true" id="14f88889-9e8c-4747-bc34-6242960040ae" name="Default" comment="Daily commit. Bot now is able to ask the master account for permission&#10;to retweet a tweet in its feed that show up in its feed. The master&#10;account authorizes by replying &quot;RTW YES&quot;.">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.go" afterPath="$PROJECT_DIR$/main.go" />
     </list>
@@ -18,8 +18,8 @@
       <file leaf-file-name="main.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="249">
-              <caret line="110" column="41" lean-forward="true" selection-start-line="110" selection-start-column="41" selection-end-line="110" selection-end-column="41" />
+            <state relative-caret-position="-180">
+              <caret line="192" column="70" lean-forward="true" selection-start-line="192" selection-start-column="70" selection-end-line="192" selection-end-column="70" />
               <folding>
                 <element signature="e#14#314#0" expanded="true" />
               </folding>
@@ -40,6 +40,7 @@
     <findStrings>
       <find>configure</find>
       <find>TEST MESSAGE</find>
+      <find>SendDirectMessage</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -200,7 +201,7 @@
     <option name="remove_strategy" value="false" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="1023" extended-state="6" />
+    <frame x="0" y="23" width="1680" height="1023" extended-state="0" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14761905" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -239,7 +240,8 @@
     <MESSAGE value="Daily commit. Bot now recognizes &quot;TWT &lt;message&gt;&quot; in direct message from the master account as an order to tweet the contents of &#10;&lt;message&gt;" />
     <MESSAGE value="Daily commit. Bot now recognizes &quot;AYT &lt;message&gt;&quot; in direct message from the master account as an order to report back to the master (to indicate the bot is active). Also moved direct messages to a function that covers DM parameters, destination, message, etc." />
     <MESSAGE value="Daily commit. Bot now is able to use a list of filter&#10;words / expressions and recognize them in its Twitter feed, reporting&#10;them (for now) to the console. Next step is to send these as DMs to the&#10;main account, asking for permission to retweet." />
-    <option name="LAST_COMMIT_MESSAGE" value="Daily commit. Bot now is able to use a list of filter&#10;words / expressions and recognize them in its Twitter feed, reporting&#10;them (for now) to the console. Next step is to send these as DMs to the&#10;main account, asking for permission to retweet." />
+    <MESSAGE value="Daily commit. Bot now is able to ask the master account for permission&#10;to retweet a tweet in its feed that show up in its feed. The master&#10;account authorizes by replying &quot;RTW YES&quot;." />
+    <option name="LAST_COMMIT_MESSAGE" value="Daily commit. Bot now is able to ask the master account for permission&#10;to retweet a tweet in its feed that show up in its feed. The master&#10;account authorizes by replying &quot;RTW YES&quot;." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -318,8 +320,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
-          <caret line="110" column="41" lean-forward="true" selection-start-line="110" selection-start-column="41" selection-end-line="110" selection-end-column="41" />
+        <state relative-caret-position="-180">
+          <caret line="192" column="70" lean-forward="true" selection-start-line="192" selection-start-column="70" selection-end-line="192" selection-end-column="70" />
           <folding>
             <element signature="e#14#314#0" expanded="true" />
           </folding>

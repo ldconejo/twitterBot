@@ -126,6 +126,7 @@ func ExamineTweet(tweetText string) bool {
 	// Now, compile regex
 	interestingTweet := regexp.MustCompile(filterRegex)
 
+	// Handle tweets that are possible retweet targets
 	if interestingTweet.MatchString(tweetText){
 		commandArray := interestingTweet.FindStringSubmatch(tweetText)
 		command := commandArray[0]
@@ -145,6 +146,9 @@ func configure(){
 	cmdLineArgs := get_commandline_args()
 	master := cmdLineArgs["masterName"]
 	servant := cmdLineArgs["servantName"]
+
+	// This variable holds retweet candidates
+	var retweetCandidate *twitter.Tweet
 
 	var twitterKeys []string
 	twitterKeys = processKeyFile("keys.txt")
@@ -182,10 +186,16 @@ func configure(){
 					client.Statuses.Update(commandParameters, nil)
 					SendDirectMessage(client, master, "I have posted your tweet.")
 				// Command is just to confirm that the bot is active
-					// AYT means "Are You There?
+				// AYT means "Are You There?
 				case "AYT":
 					// Set parameters for a response via direct message
 					SendDirectMessage(client, master, "Hey, boss. I'm active. What's up?")
+				// RTW is confirmation or denial of retweeting request
+				case "RTW":
+					// If reply is yes, then retweet
+					if commandParameters == "YES" {
+						client.Statuses.Update(retweetCandidate.Text, nil)
+					}
 				}
 				// RPT stands for report, depending on parameters, provides a report on new followers
 			} else {
@@ -199,6 +209,12 @@ func configure(){
 	demux.Tweet = func(tweet *twitter.Tweet){
 		if ExamineTweet(tweet.Text){
 			fmt.Println("This tweet is interesting:" + tweet.Text + "\n")
+
+			// Now, ask the master account for permission to retweet
+			SendDirectMessage(client, master, "RTW CANDIDATE: " + tweet.Text)
+
+			// Saves the candidate
+			retweetCandidate = tweet
 		}
 		fmt.Println(tweet.Text)
 	}
