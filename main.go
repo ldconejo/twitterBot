@@ -10,12 +10,11 @@ import (
 	// flag is imported to support command-line flags
 	"flag"
 	"regexp"
+	"strings"
 
-	// These two libraries had to be installed from the github repositories
+	// These libraries had to be installed from the github repositories
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
-	"reflect"
-	"strings"
 )
 
 ////////////////////////////////////
@@ -200,7 +199,6 @@ func configure(){
 				// RPT stands for report, depending on parameters, provides a report on new followers
 			} else {
 				fmt.Println( "Received message WAS NOT an order")
-				fmt.Println(reflect.TypeOf(client))
 			}
 		}
 	}
