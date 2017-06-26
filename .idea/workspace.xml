@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="14f88889-9e8c-4747-bc34-6242960040ae" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/LICENSE" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.go" afterPath="$PROJECT_DIR$/main.go" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -245,7 +243,8 @@
     <MESSAGE value="Daily commit. Bot now recognizes &quot;AYT &lt;message&gt;&quot; in direct message from the master account as an order to report back to the master (to indicate the bot is active). Also moved direct messages to a function that covers DM parameters, destination, message, etc." />
     <MESSAGE value="Daily commit. Bot now is able to use a list of filter&#10;words / expressions and recognize them in its Twitter feed, reporting&#10;them (for now) to the console. Next step is to send these as DMs to the&#10;main account, asking for permission to retweet." />
     <MESSAGE value="Daily commit. Bot now is able to ask the master account for permission&#10;to retweet a tweet in its feed that show up in its feed. The master&#10;account authorizes by replying &quot;RTW YES&quot;." />
-    <option name="LAST_COMMIT_MESSAGE" value="Daily commit. Bot now is able to ask the master account for permission&#10;to retweet a tweet in its feed that show up in its feed. The master&#10;account authorizes by replying &quot;RTW YES&quot;." />
+    <MESSAGE value="Updated README.md and added LICENSE file." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated README.md and added LICENSE file." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
