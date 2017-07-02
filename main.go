@@ -160,6 +160,8 @@ func configure(){
 
 	// NoContext is the default for most cases
 	httpClient := config.Client(oauth1.NoContext, token)
+
+	// Creates the Twitter Client, which wil have services allow you to handle the account
 	client := twitter.NewClient(httpClient)
 
 	// Demux seems to be an event handler where 'Tweet' and 'DM' are events
@@ -195,6 +197,28 @@ func configure(){
 					if commandParameters == "YES" {
 						client.Statuses.Update(retweetCandidate.Text, nil)
 					}
+				// Request for a list of followers
+				case "FLS":
+					userParams := &twitter.FollowerListParams{
+						ScreenName: servant,
+					}
+					// Replies with all followers
+					if commandParameters == "ALL" {
+						listOfUsers, httpResponse, err := client.Followers.List(userParams)
+						if err != nil {
+							fmt.Println(listOfUsers, httpResponse, err)
+						}
+
+						var response string = ""
+
+						for _,user := range listOfUsers.Users{
+							response = response + "\n" + user.ScreenName
+						}
+
+						fmt.Println(response)
+
+						SendDirectMessage(client, master, response )
+					}
 				}
 				// RPT stands for report, depending on parameters, provides a report on new followers
 			} else {
@@ -215,6 +239,14 @@ func configure(){
 			retweetCandidate = tweet
 		}
 		fmt.Println(tweet.Text)
+	}
+
+	// This one handles notifications of new followers (covered under "Event")
+	demux.Event = func(event *twitter.Event) {
+		fmt.Println("INFO: New event - " + event.Event)
+		fmt.Println("Created at: " + event.CreatedAt)
+		fmt.Println("Target: " + event.Target.ScreenName)
+		fmt.Println("Source: " + event.Source.ScreenName)
 	}
 
 	fmt.Println("Starting stream...")
