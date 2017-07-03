@@ -212,7 +212,7 @@ func configure(){
 						var response string = ""
 
 						for _,user := range listOfUsers.Users{
-							response = response + "\n" + user.ScreenName
+							response = response + "\n" + "@" + user.ScreenName
 						}
 
 						fmt.Println(response)
