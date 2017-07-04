@@ -44,6 +44,51 @@ func processKeyFile(keyFile string) []string {
 	return lines
 }
 
+// This is a generic function to write the contents of an array to a file
+// The function will by default overwrite an existing file of the same name
+func writeTextFile(fileName string, contents []string) bool {
+	// Open the file
+	file, err := os.Create(fileName)
+
+	if err != nil {
+		fmt.Println("ERROR: Could not create file")
+		return false
+	}
+
+	// This will close the line once the function ends
+	defer file.Close()
+
+	for _,line := range contents{
+		file.WriteString(line + "\n")
+	}
+
+	// Flushes writes to stable storage
+	file.Sync()
+
+	return true
+}
+
+// Compares two slices and returns an array with the differences
+// Aims at finding unique elements in the "left" slice
+func compareSlices(left []string, right []string ) []string {
+	var result []string
+
+	for _, leftElement := range left {
+		match := false
+		for _, rightElement := range right {
+			if leftElement == rightElement {
+				match = true
+				break
+			}
+		}
+		if match == false {
+			result = append(result, leftElement)
+		}
+	}
+
+	return result
+}
+
 // Parses arguments and returns a map
 func get_commandline_args() map[string]string {
 	// Declare command line parameters and their default values
@@ -202,22 +247,44 @@ func configure(){
 					userParams := &twitter.FollowerListParams{
 						ScreenName: servant,
 					}
+					listOfUsers, httpResponse, err := client.Followers.List(userParams)
+					if err != nil {
+						fmt.Println(listOfUsers, httpResponse, err)
+					}
+
+					var response string = ""
+
+					var followers []string
+
+					for _,user := range listOfUsers.Users{
+						response = response + "\n" + "@" + user.ScreenName
+						followers = append(followers, user.ScreenName)
+					}
 					// Replies with all followers
-					if commandParameters == "ALL" {
-						listOfUsers, httpResponse, err := client.Followers.List(userParams)
-						if err != nil {
-							fmt.Println(listOfUsers, httpResponse, err)
-						}
+					switch commandParameters {
+						case "ALL":
+							fmt.Println(response)
 
-						var response string = ""
-
-						for _,user := range listOfUsers.Users{
-							response = response + "\n" + "@" + user.ScreenName
-						}
-
-						fmt.Println(response)
-
-						SendDirectMessage(client, master, response )
+							SendDirectMessage(client, master, response )
+						case "NEW":
+							// Check if followers.txt file exists
+							if _, err := os.Stat("followers.txt"); err == nil {
+								originalList := processKeyFile("followers.txt")
+								delta := compareSlices(followers, originalList)
+								response = ""
+								for _, screenName := range delta {
+									response = response + "\n@" + screenName
+								}
+							} else {
+								response := "No previous followers file. Send FLS ALL to create a new one."
+								fmt.Println(response)
+							}
+							if response == "" {
+								response = "No new followers"
+							}
+							// Save list of followers
+							writeTextFile("followers.txt", followers)
+							SendDirectMessage(client, master, response )
 					}
 				}
 				// RPT stands for report, depending on parameters, provides a report on new followers
