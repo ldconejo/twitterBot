@@ -3,184 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
-	"bufio"
 	"os"
 	"os/signal"
 	"syscall"
-	// flag is imported to support command-line flags
-	"flag"
-	"regexp"
-	"strings"
 
 	// These libraries had to be installed from the github repositories
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+
 )
 
 ////////////////////////////////////
 // Implementation functions
 ///////////////////////////////////
-
-// Returns a list of lines in a file
-// It is used to get the Twitter keys for the account
-// and to get list of filter words for tweet selection
-func processKeyFile(keyFile string) []string {
-	// Open file
-	file, err := os.Open(keyFile)
-	if err != nil {
-		panic(err)
-	}
-	// Defer occurs only after the function ends
-	// which makes sense, considering it closes the file
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-
-	// Gets each line from the file, using the scanner, and appends it to the array
-	for scanner.Scan(){
-		lines = append(lines, scanner.Text())
-	}
-	return lines
-}
-
-// This is a generic function to write the contents of an array to a file
-// The function will by default overwrite an existing file of the same name
-func writeTextFile(fileName string, contents []string) bool {
-	// Open the file
-	file, err := os.Create(fileName)
-
-	if err != nil {
-		fmt.Println("ERROR: Could not create file")
-		return false
-	}
-
-	// This will close the line once the function ends
-	defer file.Close()
-
-	for _,line := range contents{
-		file.WriteString(line + "\n")
-	}
-
-	// Flushes writes to stable storage
-	file.Sync()
-
-	return true
-}
-
-// Compares two slices and returns an array with the differences
-// Aims at finding unique elements in the "left" slice
-func compareSlices(left []string, right []string ) []string {
-	var result []string
-
-	for _, leftElement := range left {
-		match := false
-		for _, rightElement := range right {
-			if leftElement == rightElement {
-				match = true
-				break
-			}
-		}
-		if match == false {
-			result = append(result, leftElement)
-		}
-	}
-
-	return result
-}
-
-// Parses arguments and returns a map
-func get_commandline_args() map[string]string {
-	// Declare command line parameters and their default values
-
-	// The master account has control over what the bot does
-	masterNamePtr := flag.String("master", "luisdconejo", "the name of the master account")
-	// myname is the screen name of the servant account
-	mynamePtr := flag.String("servant", "eran_marno", "screen name of the servant account")
-
-	flag.Parse()
-
-	// Create an empty map (similar to a Python dictionary)
-	cmdLineArgs := map[string]string{}
-	cmdLineArgs["masterName"] = *masterNamePtr
-	cmdLineArgs["servantName"] = *mynamePtr
-	return cmdLineArgs
-}
-
-// Decodes direct messages to master account
-// Returns a string and an array containing the type of message
-// and any parameters
-func decodeMasterMessage(masterMessage string) (string, string, string) {
-	var validCommand = regexp.MustCompile(`([A-Z]{3}) (.*)`)
-	var result string
-	var commandArray []string
-
-	if validCommand.MatchString(masterMessage){
-		commandArray = validCommand.FindStringSubmatch(masterMessage)
-		command := commandArray[1]
-		commandParameters := commandArray[2]
-
-		fmt.Println("Command:", command)
-		fmt.Println("Parameters:", commandParameters)
-
-		result = "true"
-		return result, command, commandParameters
-	}
-	result = "false"
-	return result, "empty", "empty"
-
-}
-
-// Sends a direct message to the master account
-func SendDirectMessage(client *twitter.Client, screenName string, messageText string){
-	dmParams := &twitter.DirectMessageNewParams{
-		ScreenName: screenName,
-		Text: messageText,
-	}
-	directMessage, httpResponse, err := client.DirectMessages.New(dmParams)
-	if err != nil {
-		fmt.Println(directMessage, httpResponse, err)
-	}
-}
-
-// Examines a tweet and decides whether to ask the master for permission to tweet it
-// Uses simple matching to select tweets that content words in the list
-func ExamineTweet(tweetText string) bool {
-
-	var filterWords []string
-	filterWords = processKeyFile("filters.txt")
-
-	filterRegex := ""
-
-	// Assemble combined string for regex
-	for _,word := range filterWords{
-		word = strings.ToUpper(word)
-		if filterRegex == "" {
-			filterRegex = "(" + word + ")+"
-		} else {
-			filterRegex = filterRegex + "|(" + word + ")+"
-		}
-	}
-
-	fmt.Println("INFO: Regex: " + filterRegex)
-
-	// Capitalizes the string being tested
-	tweetText = strings.ToUpper(tweetText)
-
-	// Now, compile regex
-	interestingTweet := regexp.MustCompile(filterRegex)
-
-	// Handle tweets that are possible retweet targets
-	if interestingTweet.MatchString(tweetText){
-		commandArray := interestingTweet.FindStringSubmatch(tweetText)
-		command := commandArray[0]
-		fmt.Println("INFO: String match: " + command)
-		return true
-	}
-
-	return false
-}
-
 // Checks if a command is valid
 // Valid commands are: TWT (tweet), FLW (follow)
 
@@ -224,73 +59,9 @@ func configure(){
 			// Decode instruction from master
 			result, command, commandParameters := decodeMasterMessage(dm.Text)
 
-			if  result == "true" {
-				switch command {
-				// Command is to tweet something
-				case "TWT":
-					// Tweets the command parameters and sends confirmation to master account
-					client.Statuses.Update(commandParameters, nil)
-					SendDirectMessage(client, master, "I have posted your tweet.")
-				// Command is just to confirm that the bot is active
-				// AYT means "Are You There?
-				case "AYT":
-					// Set parameters for a response via direct message
-					SendDirectMessage(client, master, "Hey, boss. I'm active. What's up?")
-				// RTW is confirmation or denial of retweeting request
-				case "RTW":
-					// If reply is yes, then retweet
-					if commandParameters == "YES" {
-						client.Statuses.Update(retweetCandidate.Text, nil)
-					}
-				// Request for a list of followers
-				case "FLS":
-					userParams := &twitter.FollowerListParams{
-						ScreenName: servant,
-					}
-					listOfUsers, httpResponse, err := client.Followers.List(userParams)
-					if err != nil {
-						fmt.Println(listOfUsers, httpResponse, err)
-					}
+			// Take action on decoded master message
+			ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters)
 
-					var response string = ""
-
-					var followers []string
-
-					for _,user := range listOfUsers.Users{
-						response = response + "\n" + "@" + user.ScreenName
-						followers = append(followers, user.ScreenName)
-					}
-					// Replies with all followers
-					switch commandParameters {
-						case "ALL":
-							fmt.Println(response)
-
-							SendDirectMessage(client, master, response )
-						case "NEW":
-							// Check if followers.txt file exists
-							if _, err := os.Stat("followers.txt"); err == nil {
-								originalList := processKeyFile("followers.txt")
-								delta := compareSlices(followers, originalList)
-								response = ""
-								for _, screenName := range delta {
-									response = response + "\n@" + screenName
-								}
-							} else {
-								response := "No previous followers file. Send FLS ALL to create a new one."
-								fmt.Println(response)
-							}
-							if response == "" {
-								response = "No new followers"
-							}
-							// Save list of followers
-							writeTextFile("followers.txt", followers)
-							SendDirectMessage(client, master, response )
-					}
-				}
-				// RPT stands for report, depending on parameters, provides a report on new followers
-			} else {
-				fmt.Println( "Received message WAS NOT an order")
-			}
 		}
 	}
 
@@ -349,43 +120,3 @@ func main() {
 	// Launch the bot
 	configure()
 }
-
-/* Unused code, kept here as backup
-	/*
-	demux.All = func(message interface{}){
-		fmt.Println(message)
-	}
-	*/
-
-// Filter
-// StreamFilterParams is a struct type, note that filterParams is really a pointer
-
-/*
-filterParams := &twitter.StreamFilterParams{
-	// Note that []string is simply the type for a string slice literal (dynamically sized portion
-	// of an array)
-	Track:		[]string{"LUISCONEJO"},
-	StallWarnings:	twitter.Bool(true),
-}
-*/
-
-// Sample stream (instead of filtered)
-/*
-params := &twitter.StreamSampleParams{
-	StallWarnings: twitter.Bool(true),
-}
-*/
-
-// This is where the tweet gets printed
-/*
-demux.Tweet = func(tweet *twitter.Tweet){
-	// Direct message (DM) params
-	// This is used to send messages to the master account
-	dmParams := &twitter.DirectMessageNewParams{
-		ScreenName: "eran_marno",
-		Text: tweet.Text,
-	}
-	fmt.Println(tweet.Text)
-	client.DirectMessages.New(dmParams)
-}
-*/
