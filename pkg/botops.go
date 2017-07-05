@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 // Decodes direct messages to master account
 // Returns a string and an array containing the type of message
 // and any parameters
-func decodeMasterMessage(masterMessage string) (bool, string, string) {
+func DecodeMasterMessage(masterMessage string) (bool, string, string) {
 	var validCommand = regexp.MustCompile(`([A-Z]{3}) (.*)`)
 	var result bool
 	var commandArray []string
@@ -81,8 +81,8 @@ func ActOnMasterMessage (client *twitter.Client, master string, servant string, 
 			case "NEW":
 				// Check if followers.txt file exists
 				if _, err := os.Stat("followers.txt"); err == nil {
-					originalList := processKeyFile("followers.txt")
-					delta := compareSlices(followers, originalList)
+					originalList := ProcessKeyFile("followers.txt")
+					delta := CompareSlices(followers, originalList)
 					response = ""
 					for _, screenName := range delta {
 						response = response + "\n@" + screenName
@@ -95,7 +95,7 @@ func ActOnMasterMessage (client *twitter.Client, master string, servant string, 
 					response = "No new followers"
 				}
 				// Save list of followers
-				writeTextFile("followers.txt", followers)
+				WriteTextFile("followers.txt", followers)
 				SendDirectMessage(client, master, response )
 			}
 		}
@@ -122,7 +122,7 @@ func SendDirectMessage(client *twitter.Client, screenName string, messageText st
 func ExamineTweet(tweetText string) bool {
 
 	var filterWords []string
-	filterWords = processKeyFile("filters.txt")
+	filterWords = ProcessKeyFile("filters.txt")
 
 	filterRegex := ""
 

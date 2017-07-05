@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 // Returns a list of lines in a file
 // It is used to get the Twitter keys for the account
 // and to get list of filter words for tweet selection
-func processKeyFile(keyFile string) []string {
+func ProcessKeyFile(keyFile string) []string {
 	// Open file
 	file, err := os.Open(keyFile)
 	if err != nil {
@@ -32,7 +32,7 @@ func processKeyFile(keyFile string) []string {
 
 // This is a generic function to write the contents of an array to a file
 // The function will by default overwrite an existing file of the same name
-func writeTextFile(fileName string, contents []string) bool {
+func WriteTextFile(fileName string, contents []string) bool {
 	// Open the file
 	file, err := os.Create(fileName)
 
@@ -56,7 +56,7 @@ func writeTextFile(fileName string, contents []string) bool {
 
 // Compares two slices and returns an array with the differences
 // Aims at finding unique elements in the "left" slice
-func compareSlices(left []string, right []string ) []string {
+func CompareSlices(left []string, right []string ) []string {
 	var result []string
 
 	for _, leftElement := range left {
@@ -76,7 +76,7 @@ func compareSlices(left []string, right []string ) []string {
 }
 
 // Parses arguments and returns a map
-func get_commandline_args() map[string]string {
+func Get_commandline_args() map[string]string {
 	// Declare command line parameters and their default values
 
 	// The master account has control over what the bot does

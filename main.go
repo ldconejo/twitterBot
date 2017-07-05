@@ -11,6 +11,8 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 
+	"twitterBot/pkg"
+
 )
 
 ////////////////////////////////////
@@ -22,7 +24,7 @@ import (
 // Launches the bot
 func configure(){
 	// Get commandline arguments
-	cmdLineArgs := get_commandline_args()
+	cmdLineArgs := pkg.Get_commandline_args()
 	master := cmdLineArgs["masterName"]
 	servant := cmdLineArgs["servantName"]
 
@@ -30,7 +32,7 @@ func configure(){
 	var retweetCandidate *twitter.Tweet
 
 	var twitterKeys []string
-	twitterKeys = processKeyFile("keys.txt")
+	twitterKeys = pkg.ProcessKeyFile("keys.txt")
 
 	// Pass in your consumer key (API key) and your consumer secret (API secret)
 	config := oauth1.NewConfig(twitterKeys[0], twitterKeys[1])
@@ -57,21 +59,21 @@ func configure(){
 			fmt.Println(master)
 		} else if dm.SenderScreenName == master{
 			// Decode instruction from master
-			result, command, commandParameters := decodeMasterMessage(dm.Text)
+			result, command, commandParameters := pkg.DecodeMasterMessage(dm.Text)
 
 			// Take action on decoded master message
-			ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters)
+			pkg.ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters)
 
 		}
 	}
 
 	// This one handles tweets on the user stream
 	demux.Tweet = func(tweet *twitter.Tweet){
-		if ExamineTweet(tweet.Text){
+		if pkg.ExamineTweet(tweet.Text){
 			fmt.Println("This tweet is interesting:" + tweet.Text + "\n")
 
 			// Now, ask the master account for permission to retweet
-			SendDirectMessage(client, master, "RTW CANDIDATE: " + tweet.Text)
+			pkg.SendDirectMessage(client, master, "RTW CANDIDATE: " + tweet.Text)
 
 			// Saves the candidate
 			retweetCandidate = tweet
