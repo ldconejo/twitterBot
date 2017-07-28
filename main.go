@@ -12,7 +12,6 @@ import (
 	"github.com/dghubble/oauth1"
 
 	"twitterBot/pkg"
-
 )
 
 ////////////////////////////////////
@@ -22,7 +21,7 @@ import (
 // Valid commands are: TWT (tweet), FLW (follow)
 
 // Launches the bot
-func configure(){
+func configure() {
 	// Get commandline arguments
 	cmdLineArgs := pkg.Get_commandline_args()
 	master := cmdLineArgs["masterName"]
@@ -30,6 +29,9 @@ func configure(){
 
 	// This variable holds retweet candidates
 	var retweetCandidate *twitter.Tweet
+
+	// This variable holds the current status (running paused)
+	pauseRetweet := false
 
 	var twitterKeys []string
 	twitterKeys = pkg.ProcessKeyFile("keys.txt")
@@ -51,30 +53,33 @@ func configure(){
 
 	// This one handles direct messages that are received
 	// Part of SwitchDemux
-	demux.DM = func(dm *twitter.DirectMessage){
+	demux.DM = func(dm *twitter.DirectMessage) {
 		// Check if the message comes from the master account
-		if dm.SenderScreenName != master && dm.SenderScreenName != servant{
+		if dm.SenderScreenName != master && dm.SenderScreenName != servant {
 			fmt.Println("Whoever you are, you're not my master")
 			pkg.SendDirectMessage(client, master, "Whoever you are, you're not my master")
 			fmt.Println(dm.SenderScreenName)
 			fmt.Println(master)
-		} else if dm.SenderScreenName == master{
+		} else if dm.SenderScreenName == master {
 			// Decode instruction from master
 			result, command, commandParameters := pkg.DecodeMasterMessage(dm.Text)
 
 			// Take action on decoded master message
-			pkg.ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters)
-
+			pkg.ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters, &pauseRetweet)
 		}
 	}
 
 	// This one handles tweets on the user stream
-	demux.Tweet = func(tweet *twitter.Tweet){
-		if pkg.ExamineTweet(tweet.Text){
+	demux.Tweet = func(tweet *twitter.Tweet) {
+		if pkg.ExamineTweet(tweet.Text) {
 			fmt.Println("This tweet is interesting:" + tweet.Text + "\n")
 
-			// Now, ask the master account for permission to retweet
-			pkg.SendDirectMessage(client, master, "RTW CANDIDATE: " + tweet.Text)
+			// Now, ask the master account for permission to retweet, if retweet requests are not paused
+			if pauseRetweet == false {
+				pkg.SendDirectMessage(client, master, "RTW CANDIDATE: "+tweet.Text)
+			} else {
+				fmt.Println("Will not ask to retweet, since retweets are currently paused")
+			}
 
 			// Saves the candidate
 			retweetCandidate = tweet
@@ -94,7 +99,7 @@ func configure(){
 
 	// User stream
 	userParams := &twitter.StreamUserParams{
-		With: "followings",
+		With:          "followings",
 		StallWarnings: twitter.Bool(true),
 	}
 

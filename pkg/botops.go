@@ -9,7 +9,7 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 )
 
-// /Decodes direct messages to master account
+// DecodeMasterMessage decodes direct messages to master account
 // Returns a string and an array containing the type of message
 // and any parameters
 func DecodeMasterMessage(masterMessage string) (bool, string, string) {
@@ -33,9 +33,9 @@ func DecodeMasterMessage(masterMessage string) (bool, string, string) {
 
 }
 
-// Act on master message
+// ActOnMasterMessage
 // Uses the output from decodeMasterMessage and takes action on it
-func ActOnMasterMessage(client *twitter.Client, master string, servant string, retweetCandidate *twitter.Tweet, result bool, command string, commandParameters string) {
+func ActOnMasterMessage(client *twitter.Client, master string, servant string, retweetCandidate *twitter.Tweet, result bool, command string, commandParameters string, pauseRetweet *bool) {
 	if result == true {
 		switch command {
 		// Command is to tweet something
@@ -134,6 +134,27 @@ func ActOnMasterMessage(client *twitter.Client, master string, servant string, r
 			client.Friendships.Destroy(unfriendParams)
 			response := "I stopped following " + commandParameters
 			SendDirectMessage(client, master, response)
+
+		// Command to pause retweet requests
+		case "PRT":
+			switch commandParameters {
+			case "YES":
+				*pauseRetweet = true
+				response := "Pausing all retweet requests"
+				SendDirectMessage(client, master, response)
+			case "NO":
+				*pauseRetweet = false
+				response := "Resuming retweet requests"
+				SendDirectMessage(client, master, response)
+			default:
+				if *pauseRetweet == true {
+					response := "Retweet requests are currently paused"
+					SendDirectMessage(client, master, response)
+				} else {
+					response := "Retweet requests are currently active"
+					SendDirectMessage(client, master, response)
+				}
+			}
 		}
 
 	} else {
