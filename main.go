@@ -55,6 +55,7 @@ func configure(){
 		// Check if the message comes from the master account
 		if dm.SenderScreenName != master && dm.SenderScreenName != servant{
 			fmt.Println("Whoever you are, you're not my master")
+			pkg.SendDirectMessage(client, master, "Whoever you are, you're not my master")
 			fmt.Println(dm.SenderScreenName)
 			fmt.Println(master)
 		} else if dm.SenderScreenName == master{
