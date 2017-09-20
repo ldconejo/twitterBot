@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -35,7 +36,7 @@ func DecodeMasterMessage(masterMessage string) (bool, string, string) {
 
 // ActOnMasterMessage
 // Uses the output from decodeMasterMessage and takes action on it
-func ActOnMasterMessage(client *twitter.Client, master string, servant string, retweetCandidate *twitter.Tweet, result bool, command string, commandParameters string, pauseRetweet *bool) {
+func ActOnMasterMessage(client *twitter.Client, master string, servant string, retweetCandidateMap map[int]*twitter.Tweet, result bool, command string, commandParameters string, pauseRetweet *bool) {
 	if result == true {
 		switch command {
 		// Command is to tweet something
@@ -50,9 +51,19 @@ func ActOnMasterMessage(client *twitter.Client, master string, servant string, r
 			SendDirectMessage(client, master, "Hey, boss. I'm active. What's up?")
 			// RTW is confirmation or denial of retweeting request
 		case "RTW":
-			// If reply is yes, then retweet
-			if commandParameters == "YES" {
-				client.Statuses.Update(retweetCandidate.Text, nil)
+			// Convert to integer and retweet if it exists
+			if tweetIndex, err := strconv.Atoi(commandParameters); err == nil {
+				fmt.Println("Retweet order received for index " + commandParameters)
+				//fmt.Println(retweetCandidateMap[tweetIndex].Text)
+				// Check that the index exists
+				if retweetCandidate, ok := retweetCandidateMap[tweetIndex]; ok {
+					client.Statuses.Update(retweetCandidate.Text, nil)
+				} else {
+					fmt.Println("ERROR: Incorrect index for retweet")
+					SendDirectMessage(client, master, "ERROR: Incorrect index for retweet")
+				}
+			} else {
+				fmt.Println(err)
 			}
 		// Request for a list of followers
 		case "FLS":

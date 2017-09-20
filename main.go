@@ -27,8 +27,14 @@ func configure() {
 	master := cmdLineArgs["masterName"]
 	servant := cmdLineArgs["servantName"]
 
+	////////////////////////////////////////
+	// Execution variables
+	///////////////////////////////////////
 	// This variable holds retweet candidates
-	var retweetCandidate *twitter.Tweet
+	retweetCandidateMap := map[int]*twitter.Tweet{}
+	retweetCandidateCurrentIndex := 0
+	// This one sets a limit to how many retweet candidates to hold (10)
+	retweentCandidateLimit := 10
 
 	// This variable holds the current status (running paused)
 	pauseRetweet := false
@@ -48,6 +54,10 @@ func configure() {
 	// Creates the Twitter Client, which wil have services allow you to handle the account
 	client := twitter.NewClient(httpClient)
 
+	//////////////////////////////////////////////////////////
+	// Event handling
+	/////////////////////////////////////////////////////////
+
 	// Demux seems to be an event handler where 'Tweet' and 'DM' are events
 	demux := twitter.NewSwitchDemux()
 
@@ -65,7 +75,7 @@ func configure() {
 			result, command, commandParameters := pkg.DecodeMasterMessage(dm.Text)
 
 			// Take action on decoded master message
-			pkg.ActOnMasterMessage(client, master, servant, retweetCandidate, result, command, commandParameters, &pauseRetweet)
+			pkg.ActOnMasterMessage(client, master, servant, retweetCandidateMap, result, command, commandParameters, &pauseRetweet)
 		}
 	}
 
@@ -76,13 +86,17 @@ func configure() {
 
 			// Now, ask the master account for permission to retweet, if retweet requests are not paused
 			if pauseRetweet == false {
-				pkg.SendDirectMessage(client, master, "RTW CANDIDATE: "+tweet.Text)
+				// Saves the candidate
+				retweetCandidateCurrentIndex++
+				if retweetCandidateCurrentIndex > retweentCandidateLimit {
+					retweetCandidateCurrentIndex = 0
+				}
+				retweetCandidateMap[retweetCandidateCurrentIndex] = tweet
+
+				pkg.SendDirectMessage(client, master, "RTW CANDIDATE "+fmt.Sprint(retweetCandidateCurrentIndex)+": "+tweet.Text)
 			} else {
 				fmt.Println("Will not ask to retweet, since retweets are currently paused")
 			}
-
-			// Saves the candidate
-			retweetCandidate = tweet
 		}
 		fmt.Println(tweet.Text)
 	}
